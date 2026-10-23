@@ -191,6 +191,7 @@ export const updateContent = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const contentId = req.params.id;
+    const {role} = req.user;
 
     // Pastikan konten ada dan milik user (mencegah IDOR)
     const [contents] = await pool.execute(
