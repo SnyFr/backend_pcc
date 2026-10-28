@@ -8,10 +8,6 @@ export const addChecklist = async (req, res, next) => {
     const contentId = req.params.id;
     const { task_name } = req.body;
 
-    if (!task_name || typeof task_name !== "string" || task_name.trim() === "") {
-      return sendResponse(res, 400, false, "Task name is required");
-    }
-
     // Pastikan konten ada dan milik user
     const [contents] = await pool.execute(
       "SELECT id FROM contents WHERE id = ? AND user_id = ?",
