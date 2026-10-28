@@ -9,6 +9,9 @@ import {
 import { addChecklist } from "../controllers/checklistController.js";
 import { addMetric } from "../controllers/metricController.js";
 import { authenticateToken } from "../middlewares/middleware.js";
+import { validate } from "../middlewares/ValidationMiddleware.js";
+import { getContentsSchema, createContentSchema, updateContentSchema } from "../validation/contentValidation.js";
+import { addChecklistSchema } from "../validation/checklistValidation.js";
 
 const router = express.Router();
 
@@ -16,15 +19,14 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // CRUD Konten & Pipeline (Tiket CCP-03)
-router.get("/", getContents);
-router.post("/", createContent);
+router.get("/", validate(getContentsSchema, "query"), getContents);
+router.post("/", validate(createContentSchema), createContent);
 router.get("/:id", getContentById);
-router.put("/:id", updateContent);
-router.patch("/:id", updateContent);
+router.put("/:id", validate(updateContentSchema), updateContent);
 router.delete("/:id", deleteContent);
 
 // Submodul Checklists per Konten (Tiket CCP-04)
-router.post("/:id/checklists", addChecklist);
+router.post("/:id/checklists", validate(addChecklistSchema), addChecklist);
 
 // Submodul Metrics Snapshot per Konten (Tiket CCP-05)
 router.post("/:id/metrics", addMetric);

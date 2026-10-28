@@ -1,51 +1,7 @@
 import pool from "../config/db.js";
 import sendResponse from "../utils/response.js";
 
-const VALID_FORMAT_TYPES = ["short_video", "long_video", "carousel", "single_post"];
-const VALID_STATUSES = ["idea", "scripting", "recording", "editing", "review", "ready", "published"];
-const VALID_PRIORITIES = ["low", "medium", "high"];
-
-// URL Validator Helper
-const isValidUrl = (urlString) => {
-  try {
-    const parseURL = new URL(urlString);
-    return parseURL.protocol === "http:" || parseURL.protocol === "https:";
-  } catch {
-    return false;
-  }
-};
-
-// export const updateUserRole = async (req, res, next) => {
-//   const {id: targetUserId } = req.params;
-//   const {newRole} = req.body;
-//   const currentRole = req.user.role;
-  
-//   if (newRole === 'admin' && currentRole !== 'admin') {
-//     return sendResponse(res, 403, false, "You do not have authority to become an admin")
-//   }
-
-//   if (currentRole === 'creator') {
-//     if (newRole !== 'editor') {
-//       return sendResponse(res, 403, false, "Creator can only be changed to editor")
-//     }
-//   }
-
-//   if (currentRole === 'editor') {
-//     if(newRole !== 'creator') {
-//       return sendResponse(res, 403, false, "Editor can only changed to creator")
-//     }
-//   }
-
-//   try {
-//     await pool.query('UPDATE users SET role = ? WHERE id = ?', [newRole, targetUserId])
-//     return sendResponse(res, 200, true, `Role have been changed to ${newRole}`)
-//   } catch (error) {
-//     return sendResponse(res, 500, false, "An error occured on the server", error.message)
-//   }
-// }
-
-
-// 1. GET /api/v1/contents (List konten dengan filter ?status=&channel_id=&format_type=)
+// 1. GET /api/v1/contents
 export const getContents = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -79,13 +35,12 @@ export const getContents = async (req, res, next) => {
   }
 };
 
-// 2. GET /api/v1/contents/:id (Detail konten beserta checklists & metrics)
+// 2. GET /api/v1/contents/:id
 export const getContentById = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const contentId = req.params.id;
 
-    // Ambil data konten
     const [contents] = await pool.execute(
       `
       SELECT 
@@ -107,13 +62,11 @@ export const getContentById = async (req, res, next) => {
 
     const content = contents[0];
 
-    // Ambil checklists terkait
     const [checklists] = await pool.execute(
       "SELECT id, content_id, task_name, is_completed, created_at FROM content_checklists WHERE content_id = ? ORDER BY id ASC",
       [contentId]
     );
 
-    // Ambil metrics terkait
     const [metrics] = await pool.execute(
       "SELECT id, content_id, recorded_at, views_count, likes_count, comments_count, shares_count, created_at FROM content_metrics WHERE content_id = ? ORDER BY recorded_at DESC",
       [contentId]
@@ -129,7 +82,7 @@ export const getContentById = async (req, res, next) => {
   }
 };
 
-// 3. POST /api/v1/contents (Membuat draf ide konten baru)
+// 3. POST /api/v1/contents
 export const createContent = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -139,21 +92,12 @@ export const createContent = async (req, res, next) => {
       description = null,
       script_draft = null,
       format_type,
-      status = "idea",
-      priority = "medium",
+      status,
+      priority,
       scheduled_date = null,
     } = req.body;
 
-    // Validasi TC-02: Title wajib diisi
-    if (!title || typeof title !== "string" || title.trim() === "") {
-      return sendResponse(res, 400, false, "Title is required");
-    }
-
-    // Validasi channel_id
-    if (!channel_id) {
-      return sendResponse(res, 400, false, "Channel ID is required");
-    }
-
+    // Cek kepemilikan channel
     const [channels] = await pool.execute(
       "SELECT id FROM channels WHERE id = ? AND user_id = ?",
       [channel_id, userId]
@@ -162,20 +106,6 @@ export const createContent = async (req, res, next) => {
     if (channels.length === 0) {
       return sendResponse(res, 400, false, "Channel not found or does not belong to user");
     }
-
-    // Validasi format_type
-    if (!format_type || !VALID_FORMAT_TYPES.includes(format_type)) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        `Invalid format_type. Allowed values: ${VALID_FORMAT_TYPES.join(", ")}`
-      );
-    }
-
-    // Validasi status & priority
-    const finalStatus = VALID_STATUSES.includes(status) ? status : "idea";
-    const finalPriority = VALID_PRIORITIES.includes(priority) ? priority : "medium";
 
     // Insert ke database
     const [result] = await pool.execute(
@@ -187,13 +117,13 @@ export const createContent = async (req, res, next) => {
       [
         userId,
         channel_id,
-        title.trim(),
-        description ? description.trim() : null,
-        script_draft ? script_draft.trim() : null,
+        title,
+        description,
+        script_draft,
         format_type,
-        finalStatus,
-        finalPriority,
-        scheduled_date || null,
+        status,
+        priority,
+        scheduled_date,
       ]
     );
 
@@ -201,13 +131,13 @@ export const createContent = async (req, res, next) => {
       id: result.insertId,
       user_id: userId,
       channel_id,
-      title: title.trim(),
-      description: description ? description.trim() : null,
-      script_draft: script_draft ? script_draft.trim() : null,
+      title,
+      description,
+      script_draft,
       format_type,
-      status: finalStatus,
-      priority: finalPriority,
-      scheduled_date: scheduled_date || null,
+      status,
+      priority,
+      scheduled_date,
       published_date: null,
       published_url: null,
     });
@@ -216,14 +146,13 @@ export const createContent = async (req, res, next) => {
   }
 };
 
-// 4. PUT / PATCH /api/v1/contents/:id (Update data konten / transisi status)
+// 4. PUT / PATCH /api/v1/contents/:id
 export const updateContent = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const contentId = req.params.id;
-    const {role} = req.user;
+    const { role } = req.user;
 
-    // Pastikan konten ada dan milik user (mencegah IDOR)
     const [contents] = await pool.execute(
       "SELECT * FROM contents WHERE id = ? AND user_id = ?",
       [contentId, userId]
@@ -234,20 +163,6 @@ export const updateContent = async (req, res, next) => {
     if (!currentContent) {
       return sendResponse(res, 404, false, "Content not found");
     }
-
-    const currentStatus = currentContent.status;
-
-    if (role === 'editor') {
-      if (status !== 'review' || currentStatus !== 'editing') {
-        return sendResponse(res, 403, false, 'Editors can only submit reviews while in edit mode')
-      }
-    }
-
-    // if (role === 'creator') {
-    //   if (status === 'published' && (!published_url || published_url.trim() === '')) {
-    //     return sendResponse(res, 403, false, 'The publication URL must be entered when the status is “published”')
-    //   }
-    // }
 
     const {
       channel_id,
@@ -262,6 +177,18 @@ export const updateContent = async (req, res, next) => {
       published_url,
     } = req.body;
 
+    // Aturan bisnis Role Editor
+    if (role === "editor") {
+      if (status !== "review" || currentContent.status !== "editing") {
+        return sendResponse(
+          res,
+          403,
+          false,
+          "Editors can only submit reviews while in edit mode"
+        );
+      }
+    }
+
     // Cek channel_id jika diupdate
     let newChannelId = currentContent.channel_id;
     if (channel_id !== undefined && channel_id !== currentContent.channel_id) {
@@ -275,74 +202,15 @@ export const updateContent = async (req, res, next) => {
       newChannelId = channel_id;
     }
 
-    // Validasi format_type jika diupdate
-    if (format_type !== undefined && !VALID_FORMAT_TYPES.includes(format_type)) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        `Invalid format_type. Allowed values: ${VALID_FORMAT_TYPES.join(", ")}`
-      );
-    }
-
-    // Validasi priority jika diupdate
-    if (priority !== undefined && !VALID_PRIORITIES.includes(priority)) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        `Invalid priority. Allowed values: ${VALID_PRIORITIES.join(", ")}`
-      );
-    }
-
-    // Validasi status jika diupdate
     const targetStatus = status !== undefined ? status : currentContent.status;
-    if (status !== undefined && !VALID_STATUSES.includes(status)) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        `Invalid status. Allowed values: ${VALID_STATUSES.join(", ")}`
-      );
-    }
-
-    // Validasi TC-03 (Aturan Transisi Publikasi): Wajib ada published_url valid jika status = published
     let newPublishedUrl = published_url !== undefined ? published_url : currentContent.published_url;
     let newPublishedDate = published_date !== undefined ? published_date : currentContent.published_date;
 
-    if (targetStatus === "published") {
-      if (!newPublishedUrl || typeof newPublishedUrl !== "string" || newPublishedUrl.trim() === "") {
-        return sendResponse(
-          res,
-          400,
-          false,
-          "Published URL is required when status is changed to published"
-        );
-      }
-
-      const cleanUrl = newPublishedUrl.trim();
-      if (!isValidUrl(cleanUrl)) {
-        return sendResponse(
-          res,
-          400,
-          false,
-          "Published URL must be a valid web URL (e.g., https://...)"
-        );
-      }
-      newPublishedUrl = cleanUrl;
-
-      // Otomatis set published_date ke tanggal hari ini jika belum terisi
-      if (!newPublishedDate) {
-        newPublishedDate = new Date().toISOString().split("T")[0];
-      }
+    if (targetStatus === "published" && !newPublishedDate) {
+      newPublishedDate = new Date().toISOString().split("T")[0];
     }
 
-    // Siapkan nilai yang akan diupdate
-    const newTitle = title !== undefined ? title.trim() : currentContent.title;
-    if (title !== undefined && (!title || typeof title !== "string" || title.trim() === "")) {
-      return sendResponse(res, 400, false, "Title cannot be empty");
-    }
-
+    const newTitle = title !== undefined ? title : currentContent.title;
     const newDescription = description !== undefined ? description : currentContent.description;
     const newScriptDraft = script_draft !== undefined ? script_draft : currentContent.script_draft;
     const newFormatType = format_type !== undefined ? format_type : currentContent.format_type;
@@ -399,13 +267,12 @@ export const updateContent = async (req, res, next) => {
   }
 };
 
-// 5. DELETE /api/v1/contents/:id (Hapus konten beserta relasi anaknya)
+// 5. DELETE /api/v1/contents/:id
 export const deleteContent = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const contentId = req.params.id;
 
-    // Pastikan konten ada dan milik user
     const [contents] = await pool.execute(
       "SELECT id FROM contents WHERE id = ? AND user_id = ?",
       [contentId, userId]
@@ -415,16 +282,13 @@ export const deleteContent = async (req, res, next) => {
       return sendResponse(res, 404, false, "Content not found");
     }
 
-    // Hapus konten. MySQL CASCADE akan otomatis menghapus checklists & metrics (TC-04)
     await pool.execute("DELETE FROM contents WHERE id = ? AND user_id = ?", [
       contentId,
       userId,
     ]);
 
-    // Sesuai spesifikasi halaman 6: Status Code 204 No Content
     return res.status(204).send();
   } catch (error) {
     next(error);
   }
 };
-
