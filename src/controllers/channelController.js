@@ -1,4 +1,3 @@
-import pool from "../config/db.js";
 import sendResponse from "../utils/response.js";
 import prisma from "../config/prisma.js";
 
@@ -29,17 +28,19 @@ export const createChannel = async (req, res, next) => {
     const userId = req.user.id;
     const { platform, handle_name } = req.body;
 
-    const [result] = await pool.execute(
-      "INSERT INTO channels (user_id, platform, handle_name) VALUES (?, ?, ?)",
-      [userId, platform, handle_name]
-    );
+    const newChannel = await prisma.channel.create({
+      data: {
+        user_id: userId,
+        platform,
+        handle_name,
+      },
+    });
 
     return sendResponse(res, 201, true, "Channel created successfully!", {
-      id: result.insertId,
-      user_id: userId,
-      platform,
-      handle_name,
-    });
+      ...newChannel,
+      id: Number(newChannel.id),
+      user_id: Number(newChannel.user_id)
+    })
   } catch (error) {
     next(error);
   }

@@ -1,0 +1,580 @@
+{
+  "info": {
+    "_postman_id": "c1f7a0b3-96b4-4b5c-a5b6-7ef28d90471c",
+    "name": "Creator Content & Pipeline Tracker API",
+    "description": "Dokumentasi & Koleksi API Postman untuk project Creator Content & Pipeline Tracker (Task for Junior Programmer).\n\nFitur Utama:\n- Autentikasi (Register, Login dengan JWT)\n- Channel Management (YouTube, TikTok, Instagram, LinkedIn)\n- Content Pipeline & CRUD (Idea -> Scripting -> Recording -> Editing -> Ready -> Published)\n- Production Checklists (Add, Toggle, Delete)\n- Performance Metrics (Views, Likes, Comments, Shares snapshot)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            ""
+          ]
+        },
+        "description": "Cek apakah server Express backend aktif dan berjalan normal."
+      },
+      "response": []
+    },
+    {
+      "name": "1. Authentication (CCP-02)",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Agil Feriski\",\n  \"email\": \"new_creator@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"creator\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Mendaftarkan user baru.\n- Role yang diizinkan: `creator`, `editor`, `admin`.\n- Jika email sudah terdaftar, mengembalikan error `400 Bad Request` ('Email already taken' - TC-01)."
+          },
+          "response": []
+        },
+        {
+          "name": "Login User (Auto-save Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var resData = pm.response.json();",
+                  "    if (resData.data && resData.data.token) {",
+                  "        pm.collectionVariables.set(\"token\", resData.data.token);",
+                  "        console.log(\"Token JWT berhasil disimpan ke variable {{token}}\");",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"agil@creator.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login ke sistem dengan email & password.\n*Test script otomatis menyimpan token ke collection variable `{{token}}`.*"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Channels (CCP-02)",
+      "item": [
+        {
+          "name": "Get User Channels",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/channels",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "channels"
+              ]
+            },
+            "description": "Mengambil seluruh daftar saluran/sosial media milik user yang sedang login."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Channel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platform\": \"youtube\",\n  \"handle_name\": \"@agiltech\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/channels",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "channels"
+              ]
+            },
+            "description": "Menambahkan saluran baru.\n- Platform yang diizinkan: `youtube`, `tiktok`, `instagram`, `linkedin`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Contents (CCP-03 & CCP-05)",
+      "item": [
+        {
+          "name": "Get Contents (List & Filter)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contents?status=idea&channel_id=1&format_type=short_video",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contents"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "idea",
+                  "description": "Filter status: idea, scripting, recording, editing, ready, published",
+                  "disabled": true
+                },
+                {
+                  "key": "channel_id",
+                  "value": "1",
+                  "description": "Filter berdasarkan ID channel",
+                  "disabled": true
+                },
+                {
+                  "key": "format_type",
+                  "value": "short_video",
+                  "description": "Filter format: short_video, long_video, carousel, single_post",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Mengambil daftar konten milik pengguna. Mendukung query filter status, channel_id, dan format_type."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Content Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contents/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contents",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "ID Konten"
+                }
+              ]
+            },
+            "description": "Mengambil data detail konten beserta daftar checklist tugas produksi dan riwayat snapshot metrics."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Content (Draft)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channel_id\": 1,\n  \"title\": \"Tutorial Express.js Clean Architecture\",\n  \"description\": \"Membahas REST API dengan layering rapi\",\n  \"script_draft\": \"Hook: Mengapa arsitektur MVC/Clean Arch penting untuk Express?\",\n  \"format_type\": \"long_video\",\n  \"priority\": \"high\",\n  \"scheduled_date\": \"2026-11-20\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contents"
+              ]
+            },
+            "description": "Membuat draft konten baru.\n- `title` wajib diisi (TC-02).\n- `format_type`: `short_video`, `long_video`, `carousel`, `single_post`.\n- Default `status`: `idea`."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Content (Full/Partial)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channel_id\": 1,\n  \"title\": \"Tutorial Express.js Clean Architecture (Revisi)\",\n  \"description\": \"Deskripsi yang diperbarui\",\n  \"script_draft\": \"Draf naskah final\",\n  \"format_type\": \"long_video\",\n  \"priority\": \"high\",\n  \"scheduled_date\": \"2026-11-25\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contents/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contents",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "ID Konten"
+                }
+              ]
+            },
+            "description": "Memperbarui metadata konten (judul, deskripsi, naskah, format, tanggal jadwal, dsb.)."
+          },
+          "response": []
+        },
+        {
+          "name": "Transition Status (Pipeline)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"scripting\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contents/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contents",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "ID Konten"
+                }
+              ]
+            },
+            "description": "Mengubah status siklus hidup konten: `idea` -> `scripting` -> `recording` -> `editing` -> `ready` -> `published`."
+          },
+          "response": []
+        },
+        {
+          "name": "Publish Content (TC-03 Validation Guard)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"published\",\n  \"published_url\": \"https://youtube.com/watch?v=sample123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contents/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contents",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "ID Konten"
+                }
+              ]
+            },
+            "description": "Transisi status ke `published`.\n- Wajib menyertakan `published_url` valid (TC-03).\n- Jika tidak valid/kosong, backend akan menolak dengan HTTP 400."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Content (Cascade Delete - TC-04)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contents/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contents",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "3",
+                  "description": "ID Konten (Konten ID 3 memiliki 3 checklist & 2 metrics dari seeder)"
+                }
+              ]
+            },
+            "description": "Menghapus konten beserta seluruh relasi anak (checklist & log metrics) secara cascade tanpa meninggalkan orphan records (TC-04). Mengembalikan status `204 No Content`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Checklists (CCP-04)",
+      "item": [
+        {
+          "name": "Add Checklist Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task_name\": \"Rekam video B-Roll & Screen Recording\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contents/:id/checklists",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contents",
+                ":id",
+                "checklists"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "ID Konten target"
+                }
+              ]
+            },
+            "description": "Menambahkan item subtugas produksi ke konten tertentu."
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Checklist Status",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/checklists/:id/toggle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "checklists",
+                ":id",
+                "toggle"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "ID Checklist item"
+                }
+              ]
+            },
+            "description": "Toggle boolean `is_completed` (true <-> false) pada checklist item."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Checklist Item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/checklists/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "checklists",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "ID Checklist item yang akan dihapus"
+                }
+              ]
+            },
+            "description": "Menghapus item checklist (syarat Acceptance Criteria Tiket CCP-04). Mengembalikan status `204 No Content`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Metrics (CCP-05)",
+      "item": [
+        {
+          "name": "Record Metric Snapshot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recorded_at\": \"2026-10-29\",\n  \"views_count\": 2500,\n  \"likes_count\": 320,\n  \"comments_count\": 45,\n  \"shares_count\": 18\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contents/:id/metrics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contents",
+                ":id",
+                "metrics"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "ID Konten"
+                }
+              ]
+            },
+            "description": "Mencatat log riwayat performa analitik (Views, Likes, Comments, Shares) pada konten yang sudah ditayangkan."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
+
