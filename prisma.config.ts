@@ -1,7 +1,8 @@
 import { defineConfig } from "prisma/config";
+import "dotenv/config"
 
 export default defineConfig({
-  skills: {
-    agents: ["claude", "cursor", "agents", "devin"],
+  datasource: {
+    url: process.env.DATABASE_URL!,
   },
 });

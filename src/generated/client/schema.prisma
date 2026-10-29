@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  creator
+  editor
+  admin
+}
+
+enum FormatType {
+  short_video
+  long_video
+  carousel
+  single_post
+}
+
+enum Status {
+  idea
+  scripting
+  recording
+  editing
+  review
+  ready
+  published
+}
+
+enum Priority {
+  low
+  medium
+  high
+}
+
+model User {
+  id            BigInt   @id @default(autoincrement())
+  name          String   @db.VarChar(100)
+  email         String   @unique @db.VarChar(191)
+  password_hash String   @db.VarChar(255)
+  role          Role     @default(creator)
+  refresh_token String?  @db.Text
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  channels Channel[]
+  contents Content[]
+
+  @@map("users")
+}
+
+model Channel {
+  id          BigInt   @id @default(autoincrement())
+  user_id     BigInt
+  platform    String   @db.VarChar(30)
+  handle_name String   @db.VarChar(100)
+  created_at  DateTime @default(now())
+
+  user     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  contents Content[]
+
+  @@map("channels")
+}
+
+model Content {
+  id             BigInt     @id @default(autoincrement())
+  user_id        BigInt
+  channel_id     BigInt
+  title          String     @db.VarChar(255)
+  description    String?    @db.Text
+  script_draft   String?    @db.Text
+  format_type    FormatType
+  status         Status     @default(idea)
+  priority       Priority   @default(medium)
+  scheduled_date DateTime?  @db.Date
+  published_date DateTime?  @db.Date
+  published_url  String?    @db.VarChar(255)
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+
+  user       User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  channel    Channel            @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+  checklists ContentChecklist[]
+  metrics    ContentMetric[]
+
+  @@map("contents")
+}
+
+model ContentChecklist {
+  id           BigInt   @id @default(autoincrement())
+  content_id   BigInt
+  task_name    String   @db.VarChar(255)
+  is_completed Boolean  @default(false)
+  created_at   DateTime @default(now())
+
+  content Content @relation(fields: [content_id], references: [id], onDelete: Cascade)
+
+  @@map("content_checklists")
+}
+
+model ContentMetric {
+  id             BigInt   @id @default(autoincrement())
+  content_id     BigInt
+  recorded_at    DateTime @db.Date
+  views_count    Int      @default(0)
+  likes_count    Int      @default(0)
+  comments_count Int      @default(0)
+  shares_count   Int      @default(0)
+  created_at     DateTime @default(now())
+
+  content Content @relation(fields: [content_id], references: [id], onDelete: Cascade)
+
+  @@map("content_metrics")
+}

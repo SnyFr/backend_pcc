@@ -6,55 +6,42 @@ import sendResponse from "../utils/response.js";
 export const register = async (req, res, next) => {
   try {
     const { name, email, password, role } = req.body;
+    const normalizedEmail = email.toLowerCase();
 
-    // Validasi input
-    if (!name || typeof name !== "string" || name.trim() === "") {
-      return sendResponse(res, 400, false, "Name is required");
-    }
+    // Cek email sudah terdaftar atau belum
+    const existingUser = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+      select: { id: true },
+    });
 
-    if (!email || typeof email !== "string") {
-      return sendResponse(res, 400, false, "Email is required");
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      return sendResponse(res, 400, false, "Invalid email format");
-    }
-
-    if (!password || typeof password !== "string" || password.length < 6) {
-      return sendResponse(res, 400, false, "Password must be at least 6 characters");
-    }
-
-    const validRoles = ["creator", "editor", "admin"];
-    const userRole = role && validRoles.includes(role) ? role : "creator";
-
-    const normalizedEmail = email.trim().toLowerCase();
-
-    // Cek apakah email sudah terdaftar (TC-01)
-    const [existingUsers] = await pool.execute(
-      "SELECT id FROM users WHERE email = ?",
-      [normalizedEmail]
-    );
-
-    if (existingUsers.length > 0) {
+    if (existingUser) {
       return sendResponse(res, 400, false, "Email already taken");
     }
 
-    // Hash password
+    // password hash
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // Insert user baru
-    const [result] = await pool.execute(
-      "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
-      [name.trim(), normalizedEmail, passwordHash, userRole]
-    );
+    // insert user baru
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email: normalizedEmail,
+        password_hash: passwordHash,
+        role,
+      },
+      select: { 
+        id: true, 
+        name: true, 
+        email: true, 
+        role: true },
+    });
 
     return sendResponse(res, 201, true, "User registered successfully", {
       id: result.insertId,
-      name: name.trim(),
+      name,
       email: normalizedEmail,
-      role: userRole,
+      role,
     });
   } catch (error) {
     next(error);
@@ -64,26 +51,18 @@ export const register = async (req, res, next) => {
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      return sendResponse(res, 400, false, "Email and password are required");
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = email.toLowerCase();
 
     // Cari user berdasarkan email
-    const [users] = await pool.execute(
-      "SELECT id, name, email, password_hash, role FROM users WHERE email = ?",
-      [normalizedEmail]
-    );
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
 
-    if (users.length === 0) {
+    if (!user) {
       return sendResponse(res, 401, false, "Invalid email or password");
     }
 
-    const user = users[0];
-
-    // Verifikasi password hash
+    // Verifikasi password
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return sendResponse(res, 401, false, "Invalid email or password");
@@ -115,4 +94,3 @@ export const login = async (req, res, next) => {
     next(error);
   }
 };
-
