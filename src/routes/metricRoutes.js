@@ -1,6 +1,6 @@
 import express from "express";
 import { addMetric } from "../controllers/metricController.js";
-import { authenticateToken } from "../middlewares/authMiddleware.js";
+import { authenticateToken } from "../middlewares/middleware.js";
 
 const router = express.Router({ mergeParams: true });
 

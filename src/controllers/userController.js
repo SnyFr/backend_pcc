@@ -1,52 +1,32 @@
 import pool from "../config/db.js";
+import prisma from "../config/prisma.js";
 import sendResponse from "../utils/response.js";
 
-export const switchRole = async (req, res, next) => {
+export const updateRole = async (req, res, next) => {
   try {
-    const userId = req.user.id;
-    const { target_role } = req.body;
+    const targetUserId = Number(req.params.id);
+    const { newRole } = req.body;
+    const currentRole = req.user.role;
 
-    if (!target_role || typeof target_role !== "string") {
-      return sendResponse(res, 400, false, "Target role is required");
+    if (newRole === "admin" && currentRole !== "admin") {
+      return sendResponse(res, 403, false, "You do not have authority to become an admin");
     }
 
-    const cleanRole = target_role.trim().toLowerCase();
-
-    if (cleanRole === "admin") {
-      return sendResponse(
-        res,
-        403,
-        false,
-        "You are not allowed to switch role to Admin"
-      );
+    if (currentRole === "creator" && newRole !== "editor") {
+      return sendResponse(res, 403, false, "Creator can only be changed to editor");
     }
 
-    if (!["creator", "editor"].includes(cleanRole)) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        "Invalid target role. Allowed values: creator, editor"
-      );
+    if (currentRole === "editor" && newRole !== "creator") {
+      return sendResponse(res, 403, false, "Editor can only changed to creator");
     }
 
-    await pool.execute("UPDATE users SET role = ? WHERE id = ?", [
-      cleanRole,
-      userId,
-    ]);
+    const updatedUser = await prisma.user.update({
+      where: { id: targetUserId },
+      data: { role: newRole },
+      select: { id: true, name: true, email: true, role: true },
+    });
 
-    const [users] = await pool.execute(
-      "SELECT id, name, email, role, created_at FROM users WHERE id = ?",
-      [userId]
-    );
-
-    return sendResponse(
-      res,
-      200,
-      true,
-      `Successfully switched role to ${cleanRole}`,
-      users[0]
-    );
+    return sendResponse(res, 200, true, `Role has been changed to ${newRole}`, updatedUser);
   } catch (error) {
     next(error);
   }
