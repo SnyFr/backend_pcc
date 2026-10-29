@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import pool from "../config/db.js";
 import sendResponse from "../utils/response.js";
+import prisma from "../config/prisma.js";
 
 export const register = async (req, res, next) => {
   try {
@@ -39,9 +39,9 @@ export const register = async (req, res, next) => {
 
     return sendResponse(res, 201, true, "User registered successfully", {
       id: result.insertId,
-      name,
-      email: normalizedEmail,
-      role,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role
     });
   } catch (error) {
     next(error);
@@ -71,7 +71,7 @@ export const login = async (req, res, next) => {
     // Terbitkan JWT token
     const token = jwt.sign(
       {
-        id: user.id,
+        id: user.id.toString(),
         email: user.email,
         role: user.role,
       },
@@ -84,7 +84,7 @@ export const login = async (req, res, next) => {
     return sendResponse(res, 200, true, "Login successful", {
       token,
       user: {
-        id: user.id,
+        id: user.id.toString(),
         name: user.name,
         email: user.email,
         role: user.role,

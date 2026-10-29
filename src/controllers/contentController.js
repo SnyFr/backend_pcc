@@ -1,7 +1,21 @@
 import pool from "../config/db.js";
 import sendResponse from "../utils/response.js";
 
-// 1. GET /api/v1/contents
+const VALID_FORMAT_TYPES = ["short_video", "long_video", "carousel", "single_post"];
+const VALID_STATUSES = ["idea", "scripting", "recording", "editing", "review", "ready", "published"];
+const VALID_PRIORITIES = ["low", "medium", "high"];
+
+// URL Validator Helper
+const isValidUrl = (urlString) => {
+  try {
+    const parseURL = new URL(urlString);
+    return parseURL.protocol === "http:" || parseURL.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
+// 1. GET /api/v1/contents (List konten dengan filter ?status=&channel_id=&format_type=)
 export const getContents = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -162,6 +176,13 @@ export const updateContent = async (req, res, next) => {
 
     if (!currentContent) {
       return sendResponse(res, 404, false, "Content not found");
+    }
+
+    if (role === 'editor') {
+      // Editor cuma bisa ubah dari 'editing' ke 'review'
+      if (status !== 'review' || currentStatus !== 'editing') {
+        return sendResponse(res, 403, false, 'Editors can only submit reviews while in edit mode');
+      }
     }
 
     const {
