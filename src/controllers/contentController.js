@@ -15,36 +15,6 @@ const isValidUrl = (urlString) => {
   }
 };
 
-// export const updateUserRole = async (req, res, next) => {
-//   const {id: targetUserId } = req.params;
-//   const {newRole} = req.body;
-//   const currentRole = req.user.role;
-  
-//   if (newRole === 'admin' && currentRole !== 'admin') {
-//     return sendResponse(res, 403, false, "You do not have authority to become an admin")
-//   }
-
-//   if (currentRole === 'creator') {
-//     if (newRole !== 'editor') {
-//       return sendResponse(res, 403, false, "Creator can only be changed to editor")
-//     }
-//   }
-
-//   if (currentRole === 'editor') {
-//     if(newRole !== 'creator') {
-//       return sendResponse(res, 403, false, "Editor can only changed to creator")
-//     }
-//   }
-
-//   try {
-//     await pool.query('UPDATE users SET role = ? WHERE id = ?', [newRole, targetUserId])
-//     return sendResponse(res, 200, true, `Role have been changed to ${newRole}`)
-//   } catch (error) {
-//     return sendResponse(res, 500, false, "An error occured on the server", error.message)
-//   }
-// }
-
-
 // 1. GET /api/v1/contents (List konten dengan filter ?status=&channel_id=&format_type=)
 export const getContents = async (req, res, next) => {
   try {
@@ -235,19 +205,12 @@ export const updateContent = async (req, res, next) => {
       return sendResponse(res, 404, false, "Content not found");
     }
 
-    const currentStatus = currentContent.status;
-
     if (role === 'editor') {
+      // Editor cuma bisa ubah dari 'editing' ke 'review'
       if (status !== 'review' || currentStatus !== 'editing') {
-        return sendResponse(res, 403, false, 'Editors can only submit reviews while in edit mode')
+        return sendResponse(res, 403, false, 'Editors can only submit reviews while in edit mode');
       }
     }
-
-    // if (role === 'creator') {
-    //   if (status === 'published' && (!published_url || published_url.trim() === '')) {
-    //     return sendResponse(res, 403, false, 'The publication URL must be entered when the status is “published”')
-    //   }
-    // }
 
     const {
       channel_id,

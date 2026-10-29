@@ -1,14 +1,22 @@
 import pool from "../config/db.js";
 import sendResponse from "../utils/response.js";
+import prisma from "../config/prisma.js";
 
 export const getChannels = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
-    const [channels] = await pool.execute(
-      "SELECT id, user_id, platform, handle_name, created_at FROM channels WHERE user_id = ? ORDER BY created_at DESC",
-      [userId]
-    );
+    const channels = await prisma.channel.findMany({
+      where: { user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        platform: true,
+        handle_name: true,
+        created_at: true,
+      },
+      orderBy: { created_at: "desc" },
+    });
 
     return sendResponse(res, 200, true, "Get Channels Success!!", channels);
   } catch (error) {
