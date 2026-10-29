@@ -17,7 +17,13 @@ export const getChannels = async (req, res, next) => {
       orderBy: { created_at: "desc" },
     });
 
-    return sendResponse(res, 200, true, "Get Channels Success!!", channels);
+    const serializedChannels = channels.map(channel => ({
+      ...channel,
+      id: channel.id.toString(),
+      user_id: channel.user_id ? channel.user_id.toString() : null,
+    }));
+
+    return sendResponse(res, 200, true, "Get Channels Success!!", serializedChannels);
   } catch (error) {
     next(error);
   }
