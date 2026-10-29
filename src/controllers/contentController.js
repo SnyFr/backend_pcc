@@ -2,7 +2,7 @@ import pool from "../config/db.js";
 import sendResponse from "../utils/response.js";
 
 const VALID_FORMAT_TYPES = ["short_video", "long_video", "carousel", "single_post"];
-const VALID_STATUSES = ["idea", "scripting", "recording", "editing", "ready", "published"];
+const VALID_STATUSES = ["idea", "scripting", "recording", "editing", "review", "ready", "published"];
 const VALID_PRIORITIES = ["low", "medium", "high"];
 
 // URL Validator Helper
@@ -273,7 +273,7 @@ export const updateContent = async (req, res, next) => {
     let newPublishedUrl = published_url !== undefined ? published_url : currentContent.published_url;
     let newPublishedDate = published_date !== undefined ? published_date : currentContent.published_date;
 
-    if (role === 'creator' && targetStatus === "published") {
+    if (targetStatus === "published") {
       if (!newPublishedUrl || typeof newPublishedUrl !== "string" || newPublishedUrl.trim() === "") {
         return sendResponse(
           res,
