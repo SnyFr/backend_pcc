@@ -1,12 +1,14 @@
 import express from "express";
 import cors from "cors";
 import sendResponse from "./utils/response.js";
+import setupBigIntegerSerialization from "./utils/bigintSerialization.js";
 import authRoutes from "./routes/authRoutes.js";
 import channelRoutes from "./routes/channelRoutes.js";
 import contentRoutes from "./routes/contentRoutes.js";
 import checklistRoutes from "./routes/checklistRoutes.js";
 
 const app = express();
+setupBigIntegerSerialization();
 
 // Middlewares
 app.use(cors());
