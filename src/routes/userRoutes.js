@@ -1,11 +1,11 @@
 import express from "express";
-import { switchRole } from "../../controllers/userController.js";
-import { authenticateToken } from "../../middlewares/authMiddleware.js";
+import { updateRole } from "../controllers/userController.js";
+import { authenticateToken } from "../middlewares/middleware.js";
 
 const router = express.Router();
 
 router.use(authenticateToken);
 
-router.patch("/swt-role", switchRole);
+router.patch("/swt-role", updateRole);
 
 export default router;
