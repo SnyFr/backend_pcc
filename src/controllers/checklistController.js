@@ -6,12 +6,12 @@ import prisma from "../config/prisma.js";
 export const addChecklist = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const contentId = req.params.id;
+    const contentId = BigInt(req.params.id);
     const { task_name } = req.body;
 
-    // Pastikan konten ada dan milik user
+    // Task checklist hanya dapat diberikan oleh creator pemilik content.
     const content = await prisma.content.findFirst({
-      where: { id: contentId, user_id: userId },
+      where: { id: contentId, user_id: BigInt(userId) },
     });
 
     if (!content) {
@@ -35,14 +35,18 @@ export const addChecklist = async (req, res, next) => {
 // PATCH /api/v1/checklists/:id/toggle (Toggle status is_completed)
 export const toggleChecklist = async (req, res, next) => {
   try {
-    const userId = req.user.id;
-    const checklistId = req.params.id;
+    const { id: userId, role } = req.user;
+    const checklistId = BigInt(req.params.id);
 
-    // Pastikan checklist ada dan terkait dengan konten milik user
+    // Creator dapat checklist content miliknya. Editor dapat checklist
+    // content creator hanya saat statusnya sedang editing.
     const checklist = await prisma.contentChecklist.findFirst({
       where: {
         id: checklistId,
-        content: { user_id: userId },
+        content:
+          role === "editor"
+            ? { status: "editing" }
+            : { user_id: BigInt(userId) },
       },
     });
 
@@ -65,13 +69,13 @@ export const toggleChecklist = async (req, res, next) => {
 export const deleteChecklist = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const checklistId = req.params.id;
+    const checklistId = BigInt(req.params.id);
 
-    // Pastikan checklist ada dan terkait dengan konten milik user
+    // Editor hanya boleh mengubah status checklist, bukan menghapus task.
     const checklist = await prisma.contentChecklist.findFirst({
       where: {
         id: checklistId,
-        content: { user_id: userId },
+        content: { user_id: BigInt(userId) },
       },
     });
 
@@ -88,4 +92,3 @@ export const deleteChecklist = async (req, res, next) => {
     next(error);
   }
 };
-
