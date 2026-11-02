@@ -61,10 +61,10 @@ export const getContentById = async (req, res, next) => {
             handle_name: true,
           },
         },
-        content_checklists: {
+        checklists: {
           orderBy: { id: "asc" },
         },
-        content_metrics: {
+        metrics: {
           orderBy: { recorded_at: "desc" },
         },
       },
