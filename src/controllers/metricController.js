@@ -1,4 +1,4 @@
-import pool from "../config/db.js";
+import prisma from "../config/prisma.js"; // sesuaikan path instance prisma client Anda
 import sendResponse from "../utils/response.js";
 
 // POST /api/v1/contents/:id/metrics (Mencatat log snapshot performa konten)
@@ -15,12 +15,15 @@ export const addMetric = async (req, res, next) => {
     } = req.body;
 
     // Pastikan konten ada dan milik user
-    const [contents] = await pool.execute(
-      "SELECT id FROM contents WHERE id = ? AND user_id = ?",
-      [contentId, userId]
-    );
+    const content = await prisma.content.findFirst({
+      where: {
+        id: contentId,
+        user_id: userId,
+      },
+      select: { id: true },
+    });
 
-    if (contents.length === 0) {
+    if (!content) {
       return sendResponse(res, 404, false, "Content not found");
     }
 
@@ -44,28 +47,21 @@ export const addMetric = async (req, res, next) => {
       );
     }
 
-    const metricDate = recorded_at || new Date().toISOString().split("T")[0];
+    const metricDate = recorded_at ? new Date(recorded_at) : new Date();
 
-    const [result] = await pool.execute(
-      `
-      INSERT INTO content_metrics 
-      (content_id, recorded_at, views_count, likes_count, comments_count, shares_count)
-      VALUES (?, ?, ?, ?, ?, ?)
-      `,
-      [contentId, metricDate, views, likes, comments, shares]
-    );
-
-    return sendResponse(res, 201, true, "Metric recorded successfully", {
-      id: result.insertId,
-      content_id: Number(contentId),
-      recorded_at: metricDate,
-      views_count: views,
-      likes_count: likes,
-      comments_count: comments,
-      shares_count: shares,
+    const newMetric = await prisma.contentMetric.create({
+      data: {
+        content_id: contentId,
+        recorded_at: metricDate,
+        views_count: views,
+        likes_count: likes,
+        comments_count: comments,
+        shares_count: shares,
+      },
     });
+
+    return sendResponse(res, 201, true, "Metric recorded successfully", newMetric);
   } catch (error) {
     next(error);
   }
 };
-
