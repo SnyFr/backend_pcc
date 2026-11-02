@@ -3,27 +3,19 @@ import prisma from "../config/prisma.js";
 
 export const getChannels = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const { user_id: filterUserId } = req.query;
+
+    const whereClause = {};
+
+    // Opsi filter channel milik user spesifik jika dikirim via query param
+    if (filterUserId) whereClause.user_id = filterUserId;
 
     const channels = await prisma.channel.findMany({
-      where: { user_id: userId },
-      select: {
-        id: true,
-        user_id: true,
-        platform: true,
-        handle_name: true,
-        created_at: true,
-      },
+      where: whereClause,
       orderBy: { created_at: "desc" },
     });
 
-    const serializedChannels = channels.map(channel => ({
-      ...channel,
-      id: channel.id.toString(),
-      user_id: channel.user_id ? channel.user_id.toString() : null,
-    }));
-
-    return sendResponse(res, 200, true, "Get Channels Success!!", serializedChannels);
+    return sendResponse(res, 200, true, "Channels retrieved successfully", channels);
   } catch (error) {
     next(error);
   }
