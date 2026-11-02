@@ -5,7 +5,7 @@ import sendResponse from "../utils/response.js";
 export const addMetric = async (req, res, next) => {
   try {
     const { id: userId, role } = req.user;
-    const contentId = req.params.id;
+    const contentId = BigInt(req.params.id);
     const {
       recorded_at,
       views_count = 0,
@@ -29,7 +29,7 @@ export const addMetric = async (req, res, next) => {
     }
 
     // 2. Validasi Otorisasi Role: Hanya Admin atau Creator (pemilik konten)
-    const isCreator = content.user_id === userId;
+    const isCreator = role === "creator" && content.user_id === BigInt(userId);
     const isAdmin = role === "admin";
 
     if (!isAdmin && !isCreator) {
