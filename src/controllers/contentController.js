@@ -16,10 +16,12 @@ const isValidUrl = (urlString) => {
 // 1. GET /api/v1/contents (List konten dengan filter ?status=&channel_id=&format_type=)
 export const getContents = async (req, res, next) => {
   try {
-    const userId = req.user.id;
-    const { status, channel_id, format_type } = req.query;
+    const { status, channel_id, format_type, author_id } = req.query;
 
-    const whereClause = { user_id: userId };
+    const whereClause = {};
+
+    // Jika ingin memfilter konten milik user tertentu via query param ?author_id=xxx
+    if (author_id) whereClause.user_id = author_id;
     if (status) whereClause.status = status;
     if (channel_id) whereClause.channel_id = Number(channel_id);
     if (format_type) whereClause.format_type = format_type;
@@ -33,11 +35,23 @@ export const getContents = async (req, res, next) => {
             handle_name: true,
           },
         },
+        checklists: {
+          orderBy: { created_at: "asc" },
+        },
+        metrics: {
+          orderBy: { recorded_at: "desc" },
+        },
       },
       orderBy: { created_at: "desc" },
     });
 
-    return sendResponse(res, 200, true, "Contents retrieved successfully", contents);
+    // Filter checklists per stage untuk masing-masing konten
+    const filteredContents = contents.map((item) => ({
+      ...item,
+      checklists: item.checklists.filter((chk) => chk.stage === item.status),
+    }));
+
+    return sendResponse(res, 200, true, "Contents retrieved successfully", filteredContents);
   } catch (error) {
     next(error);
   }
