@@ -7,14 +7,15 @@ export const getChannels = async (req, res, next) => {
     const { id: userId, role } = req.user;
     const { user_id: filterUserId } = req.query;
 
-    const whereClause = {}; 
+    const whereClause = {};
 
-    // Creator HANYA bisa lihat channel miliknya
-    if (role === "creator") {
-      whereClause.user_id = userId;
-    } else if (filterUserId) {
-      // Admin & Editor bisa lihat semua / filter per user
-      whereClause.user_id = filterUserId;
+    // Hanya admin yang boleh melihat channel milik user lain.
+    if (role === "admin") {
+      if (filterUserId) {
+        whereClause.user_id = BigInt(filterUserId);
+      }
+    } else {
+      whereClause.user_id = BigInt(userId);
     }
 
     const channels = await prisma.channel.findMany({
@@ -48,8 +49,8 @@ export const getChannelById = async (req, res, next) => {
       return sendResponse(res, 404, false, "Channel not found");
     }
 
-    // Creator dilarang ngintip channel creator lain
-    if (role === "creator" && channel.user_id !== userId) {
+    // Hanya admin yang boleh melihat channel milik user lain.
+    if (role !== "admin" && channel.user_id !== BigInt(userId)) {
       return sendResponse(res, 403, false, "Forbidden: You cannot access other creator's channel");
     }
 
@@ -105,7 +106,7 @@ export const updateChannel = async (req, res, next) => {
       return sendResponse(res, 404, false, "Channel not found");
     }
 
-    if (role === "creator" && existingChannel.user_id !== userId) {
+    if (role === "creator" && existingChannel.user_id !== BigInt(userId)) {
       return sendResponse(res, 403, false, "Forbidden: You can only update your own channel");
     }
 
@@ -143,7 +144,7 @@ export const deleteChannel = async (req, res, next) => {
       return sendResponse(res, 404, false, "Channel not found");
     }
 
-    if (role === "creator" && existingChannel.user_id !== userId) {
+    if (role === "creator" && existingChannel.user_id !== BigInt(userId)) {
       return sendResponse(res, 403, false, "Forbidden: You can only delete your own channel");
     }
 
