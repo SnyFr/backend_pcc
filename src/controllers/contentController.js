@@ -60,7 +60,7 @@ export const getContents = async (req, res, next) => {
 // 2. GET /api/v1/contents/:id
 export const getContentById = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const {userId} = req.user.id;
     const contentId = Number(req.params.id);
 
     const content = await prisma.content.findFirst({
@@ -150,7 +150,7 @@ export const createContent = async (req, res, next) => {
 // 4. PUT / PATCH /api/v1/contents/:id
 export const updateContent = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const {userId} = req.user.id;
     const contentId = req.params.id;
     const { role } = req.user;
 
