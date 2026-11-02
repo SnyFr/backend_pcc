@@ -16,14 +16,21 @@ const isValidUrl = (urlString) => {
 // 1. GET /api/v1/contents (List konten dengan filter ?status=&channel_id=&format_type=)
 export const getContents = async (req, res, next) => {
   try {
+    const { id: userId, role } = req.user;
     const { status, channel_id, format_type, author_id } = req.query;
 
     const whereClause = {};
 
-    // Jika ingin memfilter konten milik user tertentu via query param ?author_id=xxx
-    if (author_id) whereClause.user_id = author_id;
+    // Creator hanya dapat melihat content miliknya sendiri.
+    // Admin dan editor dapat melihat semua content atau memfilter berdasarkan author.
+    if (role === "creator") {
+      whereClause.user_id = BigInt(userId);
+    } else if (author_id) {
+      whereClause.user_id = BigInt(author_id);
+    }
+
     if (status) whereClause.status = status;
-    if (channel_id) whereClause.channel_id = Number(channel_id);
+    if (channel_id) whereClause.channel_id = BigInt(channel_id);
     if (format_type) whereClause.format_type = format_type;
 
     const contents = await prisma.content.findMany({
@@ -60,13 +67,13 @@ export const getContents = async (req, res, next) => {
 // 2. GET /api/v1/contents/:id
 export const getContentById = async (req, res, next) => {
   try {
-    const {userId} = req.user.id;
-    const contentId = Number(req.params.id);
+    const { id: userId, role } = req.user;
+    const contentId = BigInt(req.params.id);
 
     const content = await prisma.content.findFirst({
       where: {
         id: contentId,
-        user_id: userId,
+        ...(role === "creator" && { user_id: BigInt(userId) }),
       },
       include: {
         channel: {
@@ -117,9 +124,9 @@ export const createContent = async (req, res, next) => {
       scheduled_date,
     } = req.body;
 
-    // Cek kepemilikan channel
+    // Content harus dibuat pada channel milik akun yang sedang login.
     const channel = await prisma.channel.findFirst({
-      where: { id: Number(channel_id), user_id: userId },
+      where: { id: BigInt(channel_id), user_id: BigInt(userId) },
     });
 
     if (!channel) {
@@ -129,8 +136,8 @@ export const createContent = async (req, res, next) => {
     // Insert ke database
     const newContent = await prisma.content.create({
       data: {
-        user_id: userId,
-        channel_id: Number(channel_id),
+        user_id: BigInt(userId),
+        channel_id: BigInt(channel_id),
         title,
         description: description || null,
         script_draft: script_draft || null,
