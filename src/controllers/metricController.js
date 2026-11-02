@@ -1,3 +1,7 @@
+import prisma from "../config/prisma.js"; // sesuaikan path instance prisma client Anda
+import sendResponse from "../utils/response.js";
+
+
 export const addMetric = async (req, res, next) => {
   try {
     const { id: userId, role } = req.user;
