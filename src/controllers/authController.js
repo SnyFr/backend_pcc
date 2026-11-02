@@ -38,7 +38,7 @@ export const register = async (req, res, next) => {
     });
 
     return sendResponse(res, 201, true, "User registered successfully", {
-      id: result.insertId,
+      id: newUser.insertId,
       name: newUser.name,
       email: newUser.email,
       role: newUser.role
