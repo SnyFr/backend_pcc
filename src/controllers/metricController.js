@@ -1,10 +1,6 @@
-import prisma from "../config/prisma.js"; // sesuaikan path instance prisma client Anda
-import sendResponse from "../utils/response.js";
-
-// POST /api/v1/contents/:id/metrics (Mencatat log snapshot performa konten)
 export const addMetric = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const { id: userId, role } = req.user;
     const contentId = req.params.id;
     const {
       recorded_at,
@@ -14,20 +10,44 @@ export const addMetric = async (req, res, next) => {
       shares_count = 0,
     } = req.body;
 
-    // Pastikan konten ada dan milik user
-    const content = await prisma.content.findFirst({
-      where: {
-        id: contentId,
-        user_id: userId,
+    // 1. Cari konten untuk cek keberadaan, status, dan pemiliknya
+    const content = await prisma.content.findUnique({
+      where: { id: contentId },
+      select: { 
+        id: true, 
+        user_id: true, 
+        status: true 
       },
-      select: { id: true },
     });
 
     if (!content) {
       return sendResponse(res, 404, false, "Content not found");
     }
 
-    // Validasi angka tidak boleh negatif
+    // 2. Validasi Otorisasi Role: Hanya Admin atau Creator (pemilik konten)
+    const isCreator = content.user_id === userId;
+    const isAdmin = role === "admin";
+
+    if (!isAdmin && !isCreator) {
+      return sendResponse(
+        res,
+        403,
+        false,
+        "Forbidden: Only admins and the content creator can add metrics"
+      );
+    }
+
+    // 3. Validasi Status Konten: Harus 'published'
+    if (content.status !== "published") {
+      return sendResponse(
+        res,
+        400,
+        false,
+        "Metrics can only be recorded for published contents"
+      );
+    }
+
+    // 4. Validasi Angka Tidak Boleh Negatif
     const views = Number(views_count);
     const likes = Number(likes_count);
     const comments = Number(comments_count);
