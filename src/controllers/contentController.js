@@ -74,14 +74,14 @@ export const getContentById = async (req, res, next) => {
       return sendResponse(res, 404, false, "Content not found");
     }
 
-    const { channel, content_checklists, content_metrics, ...otherList } = content;
+    const { channel, checklists, metrics, ...otherList } = content;
 
     return sendResponse(res, 200, true, "Content detail retrieved successfully", {
       ...otherList,
       channel_platform: channel.platform,
       channel_handle: channel.handle_name,
-      checklists: content_checklists,
-      metrics: content_metrics,
+      checklists,
+      metrics,
     });
   } catch (error) {
     next(error);
