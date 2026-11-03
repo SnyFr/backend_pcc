@@ -152,6 +152,7 @@ exports.Prisma.ContentScalarFieldEnum = {
   scheduled_date: 'scheduled_date',
   published_date: 'published_date',
   published_url: 'published_url',
+  recording_url: 'recording_url',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -201,7 +202,8 @@ exports.Prisma.ContentOrderByRelevanceFieldEnum = {
   title: 'title',
   description: 'description',
   script_draft: 'script_draft',
-  published_url: 'published_url'
+  published_url: 'published_url',
+  recording_url: 'recording_url'
 };
 
 exports.Prisma.ContentChecklistOrderByRelevanceFieldEnum = {

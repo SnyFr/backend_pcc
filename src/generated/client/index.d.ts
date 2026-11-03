@@ -3484,6 +3484,7 @@ export namespace Prisma {
     scheduled_date: Date | null
     published_date: Date | null
     published_url: string | null
+    recording_url: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -3501,6 +3502,7 @@ export namespace Prisma {
     scheduled_date: Date | null
     published_date: Date | null
     published_url: string | null
+    recording_url: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -3518,6 +3520,7 @@ export namespace Prisma {
     scheduled_date: number
     published_date: number
     published_url: number
+    recording_url: number
     created_at: number
     updated_at: number
     _all: number
@@ -3549,6 +3552,7 @@ export namespace Prisma {
     scheduled_date?: true
     published_date?: true
     published_url?: true
+    recording_url?: true
     created_at?: true
     updated_at?: true
   }
@@ -3566,6 +3570,7 @@ export namespace Prisma {
     scheduled_date?: true
     published_date?: true
     published_url?: true
+    recording_url?: true
     created_at?: true
     updated_at?: true
   }
@@ -3583,6 +3588,7 @@ export namespace Prisma {
     scheduled_date?: true
     published_date?: true
     published_url?: true
+    recording_url?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -3687,6 +3693,7 @@ export namespace Prisma {
     scheduled_date: Date | null
     published_date: Date | null
     published_url: string | null
+    recording_url: string | null
     created_at: Date
     updated_at: Date
     _count: ContentCountAggregateOutputType | null
@@ -3723,6 +3730,7 @@ export namespace Prisma {
     scheduled_date?: boolean
     published_date?: boolean
     published_url?: boolean
+    recording_url?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -3747,11 +3755,12 @@ export namespace Prisma {
     scheduled_date?: boolean
     published_date?: boolean
     published_url?: boolean
+    recording_url?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type ContentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "channel_id" | "title" | "description" | "script_draft" | "format_type" | "status" | "priority" | "scheduled_date" | "published_date" | "published_url" | "created_at" | "updated_at", ExtArgs["result"]["content"]>
+  export type ContentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "channel_id" | "title" | "description" | "script_draft" | "format_type" | "status" | "priority" | "scheduled_date" | "published_date" | "published_url" | "recording_url" | "created_at" | "updated_at", ExtArgs["result"]["content"]>
   export type ContentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     channel?: boolean | ChannelDefaultArgs<ExtArgs>
@@ -3781,6 +3790,7 @@ export namespace Prisma {
       scheduled_date: Date | null
       published_date: Date | null
       published_url: string | null
+      recording_url: string | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["content"]>
@@ -4168,6 +4178,7 @@ export namespace Prisma {
     readonly scheduled_date: FieldRef<"Content", 'DateTime'>
     readonly published_date: FieldRef<"Content", 'DateTime'>
     readonly published_url: FieldRef<"Content", 'String'>
+    readonly recording_url: FieldRef<"Content", 'String'>
     readonly created_at: FieldRef<"Content", 'DateTime'>
     readonly updated_at: FieldRef<"Content", 'DateTime'>
   }
@@ -6629,6 +6640,7 @@ export namespace Prisma {
     scheduled_date: 'scheduled_date',
     published_date: 'published_date',
     published_url: 'published_url',
+    recording_url: 'recording_url',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -6699,7 +6711,8 @@ export namespace Prisma {
     title: 'title',
     description: 'description',
     script_draft: 'script_draft',
-    published_url: 'published_url'
+    published_url: 'published_url',
+    recording_url: 'recording_url'
   };
 
   export type ContentOrderByRelevanceFieldEnum = (typeof ContentOrderByRelevanceFieldEnum)[keyof typeof ContentOrderByRelevanceFieldEnum]
@@ -6943,6 +6956,7 @@ export namespace Prisma {
     scheduled_date?: DateTimeNullableFilter<"Content"> | Date | string | null
     published_date?: DateTimeNullableFilter<"Content"> | Date | string | null
     published_url?: StringNullableFilter<"Content"> | string | null
+    recording_url?: StringNullableFilter<"Content"> | string | null
     created_at?: DateTimeFilter<"Content"> | Date | string
     updated_at?: DateTimeFilter<"Content"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -6964,6 +6978,7 @@ export namespace Prisma {
     scheduled_date?: SortOrderInput | SortOrder
     published_date?: SortOrderInput | SortOrder
     published_url?: SortOrderInput | SortOrder
+    recording_url?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -6989,6 +7004,7 @@ export namespace Prisma {
     scheduled_date?: DateTimeNullableFilter<"Content"> | Date | string | null
     published_date?: DateTimeNullableFilter<"Content"> | Date | string | null
     published_url?: StringNullableFilter<"Content"> | string | null
+    recording_url?: StringNullableFilter<"Content"> | string | null
     created_at?: DateTimeFilter<"Content"> | Date | string
     updated_at?: DateTimeFilter<"Content"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -7010,6 +7026,7 @@ export namespace Prisma {
     scheduled_date?: SortOrderInput | SortOrder
     published_date?: SortOrderInput | SortOrder
     published_url?: SortOrderInput | SortOrder
+    recording_url?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: ContentCountOrderByAggregateInput
@@ -7035,6 +7052,7 @@ export namespace Prisma {
     scheduled_date?: DateTimeNullableWithAggregatesFilter<"Content"> | Date | string | null
     published_date?: DateTimeNullableWithAggregatesFilter<"Content"> | Date | string | null
     published_url?: StringNullableWithAggregatesFilter<"Content"> | string | null
+    recording_url?: StringNullableWithAggregatesFilter<"Content"> | string | null
     created_at?: DateTimeWithAggregatesFilter<"Content"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"Content"> | Date | string
   }
@@ -7324,6 +7342,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutContentsInput
@@ -7345,6 +7364,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     checklists?: ContentChecklistUncheckedCreateNestedManyWithoutContentInput
@@ -7362,6 +7382,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContentsNestedInput
@@ -7383,6 +7404,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     checklists?: ContentChecklistUncheckedUpdateManyWithoutContentNestedInput
@@ -7402,6 +7424,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -7417,6 +7440,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -7434,6 +7458,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -7897,6 +7922,7 @@ export namespace Prisma {
     scheduled_date?: SortOrder
     published_date?: SortOrder
     published_url?: SortOrder
+    recording_url?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -7920,6 +7946,7 @@ export namespace Prisma {
     scheduled_date?: SortOrder
     published_date?: SortOrder
     published_url?: SortOrder
+    recording_url?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -7937,6 +7964,7 @@ export namespace Prisma {
     scheduled_date?: SortOrder
     published_date?: SortOrder
     published_url?: SortOrder
+    recording_url?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -8769,6 +8797,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     channel: ChannelCreateNestedOneWithoutContentsInput
@@ -8788,6 +8817,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     checklists?: ContentChecklistUncheckedCreateNestedManyWithoutContentInput
@@ -8863,6 +8893,7 @@ export namespace Prisma {
     scheduled_date?: DateTimeNullableFilter<"Content"> | Date | string | null
     published_date?: DateTimeNullableFilter<"Content"> | Date | string | null
     published_url?: StringNullableFilter<"Content"> | string | null
+    recording_url?: StringNullableFilter<"Content"> | string | null
     created_at?: DateTimeFilter<"Content"> | Date | string
     updated_at?: DateTimeFilter<"Content"> | Date | string
   }
@@ -8907,6 +8938,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutContentsInput
@@ -8926,6 +8958,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     checklists?: ContentChecklistUncheckedCreateNestedManyWithoutContentInput
@@ -9227,6 +9260,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutContentsInput
@@ -9247,6 +9281,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     metrics?: ContentMetricUncheckedCreateNestedManyWithoutContentInput
@@ -9279,6 +9314,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContentsNestedInput
@@ -9299,6 +9335,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     metrics?: ContentMetricUncheckedUpdateManyWithoutContentNestedInput
@@ -9315,6 +9352,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutContentsInput
@@ -9335,6 +9373,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     checklists?: ContentChecklistUncheckedCreateNestedManyWithoutContentInput
@@ -9367,6 +9406,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContentsNestedInput
@@ -9387,6 +9427,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     checklists?: ContentChecklistUncheckedUpdateManyWithoutContentNestedInput
@@ -9411,6 +9452,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -9449,6 +9491,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     channel?: ChannelUpdateOneRequiredWithoutContentsNestedInput
@@ -9468,6 +9511,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     checklists?: ContentChecklistUncheckedUpdateManyWithoutContentNestedInput
@@ -9486,6 +9530,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -9502,6 +9547,7 @@ export namespace Prisma {
     scheduled_date?: Date | string | null
     published_date?: Date | string | null
     published_url?: string | null
+    recording_url?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -9517,6 +9563,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutContentsNestedInput
@@ -9536,6 +9583,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     checklists?: ContentChecklistUncheckedUpdateManyWithoutContentNestedInput
@@ -9554,6 +9602,7 @@ export namespace Prisma {
     scheduled_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_date?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     published_url?: NullableStringFieldUpdateOperationsInput | string | null
+    recording_url?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
