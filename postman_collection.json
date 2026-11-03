@@ -366,6 +366,43 @@
           "response": []
         },
         {
+          "name": "Transition to Recording (with recording_url)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"recording\",\n  \"recording_url\": \"https://drive.google.com/drive/folders/dummy-raw-footage\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contents/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contents",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "ID Konten"
+                }
+              ]
+            },
+            "description": "Mengubah status konten ke recording.\\n- Hanya boleh diisi/diubah oleh Creator (Editor ditolak 403).\\n- Wajib menyertakan recording_url valid."
+          },
+          "response": []
+        },
+        {
           "name": "Publish Content (TC-03 Validation Guard)",
           "request": {
             "method": "PATCH",
@@ -577,4 +614,3 @@
     }
   ]
 }
-

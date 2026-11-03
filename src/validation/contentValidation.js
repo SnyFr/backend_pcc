@@ -46,6 +46,9 @@ export const createContentSchema = Joi.object({
   scheduled_date: Joi.string().isoDate().allow(null).optional().messages({
     "string.isoDate": "Scheduled date must be a valid ISO Date format",
   }),
+  recording_url: Joi.string().trim().uri({ scheme: ["http", "https"] }).allow("", null).optional().messages({
+    "string.uri": "Recording URL must be a valid web URL (e.g., https://...)",
+  }),
 });
 
 // Validasi Update Content
@@ -81,9 +84,21 @@ export const updateContentSchema = Joi.object({
   published_url: Joi.string().trim().uri({ scheme: ["http", "https"] }).allow("", null).optional().messages({
     "string.uri": "Published URL must be a valid web URL (e.g., https://...)",
   }),
+  recording_url: Joi.string().trim().uri({ scheme: ["http", "https"] }).allow("", null).optional().messages({
+    "string.uri": "Recording URL must be a valid web URL (e.g., https://...)",
+  }),
 })
-  // Jika status = 'published', published_url wajib ada dan valid
   .custom((value, helpers) => {
+    // Jika status = 'recording', recording_url wajib ada dan valid
+    if (value.status === "recording") {
+      if (!value.recording_url || value.recording_url.trim() === "") {
+        return helpers.message({
+          custom: "Recording URL is required when status is changed to recording",
+        });
+      }
+    }
+
+    // Jika status = 'published', published_url wajib ada dan valid
     if (value.status === "published") {
       if (!value.published_url || value.published_url.trim() === "") {
         return helpers.message({

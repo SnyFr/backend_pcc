@@ -78,6 +78,7 @@ model Content {
   scheduled_date DateTime?          @db.Date
   published_date DateTime?          @db.Date
   published_url  String?            @db.VarChar(255)
+  recording_url  String?            @db.VarChar(255)
   created_at     DateTime           @default(now())
   updated_at     DateTime           @updatedAt
 

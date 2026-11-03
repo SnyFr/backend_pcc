@@ -2,7 +2,6 @@ import pool from "../config/db.js";
 import sendResponse from "../utils/response.js";
 import prisma from "../config/prisma.js";
 
-
 // URL Validator Helper
 const isValidUrl = (urlString) => {
   try {
@@ -52,13 +51,18 @@ export const getContents = async (req, res, next) => {
       orderBy: { created_at: "desc" },
     });
 
-    // Filter checklists per stage untuk masing-masing konten
-    const filteredContents = contents.map((item) => ({
-      ...item,
-      checklists: item.checklists.filter((chk) => chk.stage === item.status),
-    }));
+    const formattedContents = contents.map((c) => {
+      const { channel, checklists, metrics, ...otherList } = c;
+      return {
+        ...otherList,
+        channel_platform: channel.platform,
+        channel_handle: channel.handle_name,
+        checklists,
+        metrics,
+      };
+    });
 
-    return sendResponse(res, 200, true, "Contents retrieved successfully", filteredContents);
+    return sendResponse(res, 200, true, "Contents retrieved successfully", formattedContents);
   } catch (error) {
     next(error);
   }
@@ -83,7 +87,7 @@ export const getContentById = async (req, res, next) => {
           },
         },
         checklists: {
-          orderBy: { id: "asc" },
+          orderBy: { created_at: "asc" },
         },
         metrics: {
           orderBy: { recorded_at: "desc" },
@@ -122,6 +126,7 @@ export const createContent = async (req, res, next) => {
       status,
       priority,
       scheduled_date,
+      recording_url,
     } = req.body;
 
     // Content harus dibuat pada channel milik akun yang sedang login.
@@ -145,6 +150,7 @@ export const createContent = async (req, res, next) => {
         status,
         priority,
         scheduled_date: scheduled_date ? new Date(scheduled_date) : null,
+        recording_url: recording_url || null,
       },
     });
 
@@ -157,12 +163,15 @@ export const createContent = async (req, res, next) => {
 // 4. PUT / PATCH /api/v1/contents/:id
 export const updateContent = async (req, res, next) => {
   try {
-    const {userId} = req.user.id;
-    const contentId = req.params.id;
-    const { role } = req.user;
+    const { id: userId, role } = req.user;
+    const contentId = BigInt(req.params.id);
 
+    // Creator hanya dapat mengakses konten miliknya, editor & admin dapat mengakses konten creator
     const currentContent = await prisma.content.findFirst({
-      where: { id: contentId, user_id: userId },
+      where: {
+        id: contentId,
+        ...(role === "creator" && { user_id: BigInt(userId) }),
+      },
     });
 
     if (!currentContent) {
@@ -180,24 +189,46 @@ export const updateContent = async (req, res, next) => {
       scheduled_date,
       published_date,
       published_url,
+      recording_url,
     } = req.body;
     
     // Aturan bisnis Role Editor
     if (role === "editor") {
-      if (status !== "review" || currentContent.status !== "editing") {
+      // Editor tidak boleh mengisi atau mengubah recording_url (hanya creator)
+      if (recording_url !== undefined) {
         return sendResponse(
           res,
           403,
           false,
-          "Editors can only submit reviews while in edit mode"
+          "Forbidden: Editors are not allowed to modify recording URL (Read-only for editors)"
+        );
+      }
+
+      // Editor tidak boleh mentransisikan status ke recording
+      if (status === "recording") {
+        return sendResponse(
+          res,
+          403,
+          false,
+          "Forbidden: Only creators can transition content to recording status"
+        );
+      }
+
+      // Editor hanya boleh submit review saat konten sedang dalam status editing
+      if (status && (status !== "review" || currentContent.status !== "editing")) {
+        return sendResponse(
+          res,
+          403,
+          false,
+          "Editors can only submit reviews while in editing status"
         );
       }
     }
 
     // Cek channel_id jika diupdate
-    if (channel_id !== undefined && channel_id !== currentContent.channel_id) {
+    if (channel_id !== undefined && BigInt(channel_id) !== currentContent.channel_id) {
       const channel = await prisma.channel.findFirst({
-        where: { id: Number(channel_id), user_id: userId },
+        where: { id: BigInt(channel_id), user_id: currentContent.user_id },
       });
       if (!channel) {
         return sendResponse(res, 400, false, "Channel not found or does not belong to user");
@@ -214,7 +245,7 @@ export const updateContent = async (req, res, next) => {
     const updatedContent = await prisma.content.update({
       where: { id: contentId },
       data: {
-        channel_id: channel_id !== undefined ? Number(channel_id) : undefined,
+        channel_id: channel_id !== undefined ? BigInt(channel_id) : undefined,
         title,
         description,
         script_draft,
@@ -224,6 +255,7 @@ export const updateContent = async (req, res, next) => {
         scheduled_date: scheduled_date ? new Date(scheduled_date) : undefined,
         published_date: newPublishedDate ? new Date(newPublishedDate) : undefined,
         published_url,
+        recording_url: role !== "editor" && recording_url !== undefined ? recording_url : undefined,
       },
     });
 
@@ -236,11 +268,14 @@ export const updateContent = async (req, res, next) => {
 // 5. DELETE /api/v1/contents/:id
 export const deleteContent = async (req, res, next) => {
   try {
-    const userId = req.user.id;
-    const contentId = req.params.id;
+    const { id: userId, role } = req.user;
+    const contentId = BigInt(req.params.id);
 
     const content = await prisma.content.findFirst({
-      where: { id: contentId, user_id: userId },
+      where: {
+        id: contentId,
+        ...(role === "creator" && { user_id: BigInt(userId) }),
+      },
     });
 
     if (!content) {
