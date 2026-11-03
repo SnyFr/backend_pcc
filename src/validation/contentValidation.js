@@ -90,10 +90,10 @@ export const updateContentSchema = Joi.object({
 })
   .custom((value, helpers) => {
     // Jika status = 'recording', recording_url wajib ada dan valid
-    if (value.status === "recording") {
+    if (value.status === "editing") {
       if (!value.recording_url || value.recording_url.trim() === "") {
         return helpers.message({
-          custom: "Recording URL is required when status is changed to recording",
+          custom: "Recording URL is required when status is changed to editing!",
         });
       }
     }

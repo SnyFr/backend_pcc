@@ -214,7 +214,7 @@ export const updateContent = async (req, res, next) => {
         );
       }
 
-      console.log("Current Content Status:", currentContent.status);
+      // console.log("Current Content Status:", currentContent.status);
       // Editor hanya boleh submit review saat konten sedang dalam status editing
       if (currentContent.status !== "editing") {
         return sendResponse(
