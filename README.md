@@ -260,7 +260,9 @@ Content-Type: application/json
 
 Field request bersifat opsional. Field yang dapat diubah:
 `channel_id`, `title`, `description`, `script_draft`, `format_type`, `status`,
-`priority`, `scheduled_date`, `published_date`, dan `published_url`.
+`priority`, `scheduled_date`, `published_date`, `published_url`, dan
+`recording_url`. Saat status diubah menjadi `editing`, `recording_url` wajib
+sudah tersimpan atau dikirim dalam request.
 
 #### Delete content
 

@@ -237,6 +237,12 @@ export const updateContent = async (req, res, next) => {
     }
 
     const targetStatus = status !== undefined ? status : currentContent.status;
+    const targetRecordingUrl = recording_url !== undefined ? recording_url : currentContent.recording_url;
+
+    if (targetStatus === "editing" && !targetRecordingUrl) {
+      return sendResponse(res, 422, false, "Recording URL is required when status is changed to editing!");
+    }
+
     let newPublishedDate = published_date !== undefined ? published_date : currentContent.published_date;
 
     if (targetStatus === "published" && !newPublishedDate) {
